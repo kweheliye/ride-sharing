@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"ride-sharing/services/trip-service/internal/domain"
 	"ride-sharing/services/trip-service/internal/infrastructure/repository"
 	"ride-sharing/services/trip-service/internal/service"
+	"time"
 )
 
 func main() {
@@ -22,4 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println(t)
+	for {
+		time.Sleep(time.Second)
+	}
 }
