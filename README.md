@@ -22,3 +22,9 @@ or
 ```bash
 minikube dashboard
 ```
+
+
+## References 
+
+- [Kubernetes best practices: terminating with grace](https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace)
+- [Tilt](https://tilt.dev/)
