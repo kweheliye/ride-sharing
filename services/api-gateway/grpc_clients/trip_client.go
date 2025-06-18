@@ -1,6 +1,7 @@
 package grpc_clients
 
 import (
+	"log"
 	"os"
 	pb "ride-sharing/shared/proto/trip"
 
@@ -15,9 +16,10 @@ type tripServiceClient struct {
 
 func NewTripServiceClient() (*tripServiceClient, error) {
 	tripServiceURL := os.Getenv("TRIP_SERVICE_URL")
-	if tripServiceURL == "" {
-		tripServiceURL = "trip-service:9093"
-	}
+	log.Printf("Connecting to trip service at %s", tripServiceURL)
+	//if tripServiceURL == "" {
+	//	tripServiceURL = "trip-service:9093"
+	//}
 
 	conn, err := grpc.NewClient(tripServiceURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
