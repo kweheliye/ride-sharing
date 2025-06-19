@@ -17,9 +17,22 @@ func handleTripStart(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	response := contracts.APIResponse{Data: "ok"}
+	tripService, err := grpc_clients.NewTripServiceClient()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	writeJSON(w, http.StatusCreated, response)
+	defer tripService.Close()
+
+	tripPreview, err := tripService.Client.CreateTrip(r.Context(), reqBody.toProto())
+
+	if err != nil {
+		log.Printf("Failed to preview a trip: %v", err)
+		http.Error(w, "Failed to preview trip", http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, tripPreview)
 
 	log.Println("SUCCESS")
 
@@ -54,7 +67,7 @@ func handleTripPreview(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to preview trip", http.StatusInternalServerError)
 		return
 	}
-	
+
 	response := contracts.APIResponse{Data: tripPreview}
 
 	writeJSON(w, http.StatusCreated, response)

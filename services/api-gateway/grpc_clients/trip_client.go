@@ -17,10 +17,7 @@ type tripServiceClient struct {
 func NewTripServiceClient() (*tripServiceClient, error) {
 	tripServiceURL := os.Getenv("TRIP_SERVICE_URL")
 	log.Printf("Connecting to trip service at %s", tripServiceURL)
-	//if tripServiceURL == "" {
-	//	tripServiceURL = "trip-service:9093"
-	//}
-
+	
 	conn, err := grpc.NewClient(tripServiceURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
