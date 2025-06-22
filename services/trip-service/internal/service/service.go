@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"ride-sharing/services/trip-service/internal/domain"
 	tripTypes "ride-sharing/services/trip-service/pkg/types"
+	"ride-sharing/shared/proto/trip"
 	"ride-sharing/shared/types"
 )
 
@@ -29,6 +30,7 @@ func (s *service) CreateTrip(ctx context.Context, fare *domain.RideFareModel) (*
 		UserID:   fare.UserID,
 		Status:   "pending",
 		RideFare: fare,
+		Driver:   &trip.TripDriver{},
 	}
 
 	return s.repo.CreateTrip(ctx, t)
@@ -40,7 +42,7 @@ func (s *service) GetRoute(ctx context.Context, pickup, destination *types.Coord
 		pickup.Longitude, pickup.Latitude,
 		destination.Longitude, destination.Latitude,
 	)
-	log.Println(url)
+	log.Printf("Fetching from OSRM API: URL: %s", url)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -52,6 +54,7 @@ func (s *service) GetRoute(ctx context.Context, pickup, destination *types.Coord
 	if err != nil {
 		return nil, fmt.Errorf("failed to read the response: %v", err)
 	}
+	log.Printf("GOT RESPONSE FROM API %s", string(body))
 
 	var routeResp tripTypes.OsrmApiResponse
 	if err := json.Unmarshal(body, &routeResp); err != nil {
@@ -110,6 +113,24 @@ func estimateFareRoute(f *domain.RideFareModel, route *tripTypes.OsrmApiResponse
 		TotalPriceInCents: totalPrice,
 		PackageSlug:       f.PackageSlug,
 	}
+}
+
+func (s *service) GetAndValidateFare(ctx context.Context, fareID, userID string) (*domain.RideFareModel, error) {
+	fare, err := s.repo.GetRideFareByID(ctx, fareID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get trip fare: %w", err)
+	}
+
+	if fare == nil {
+		return nil, fmt.Errorf("fare does not exist")
+	}
+
+	// User fare validation (user is owner of this fare?)
+	if userID != fare.UserID {
+		return nil, fmt.Errorf("fare does not belong to the user")
+	}
+
+	return fare, nil
 }
 
 func getBaseFares() []*domain.RideFareModel {
