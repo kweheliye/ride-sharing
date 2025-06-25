@@ -35,6 +35,8 @@ spec:
           value: "http://api-gateway:8081"
         - name: NEXT_PUBLIC_WEBSOCKET_URL
           value: "ws://api-gateway:8081/ws"
+        - name: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+          value: "12345"
         readinessProbe:
           httpGet:
             path: /
