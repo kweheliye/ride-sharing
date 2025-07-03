@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"ride-sharing/services/driver-service/internal/infrastructure/grpc"
+	driverConsumer "ride-sharing/services/driver-service/internal/infrastructure/messaging/consumer"
 	"ride-sharing/services/driver-service/internal/service"
 	"ride-sharing/shared/env"
 	"ride-sharing/shared/messaging"
@@ -49,6 +50,12 @@ func main() {
 	// Starting the gRPC server
 	grpcServer := grpcserver.NewServer()
 	grpc.NewGrpcHandler(grpcServer, svc)
+	consumer := driverConsumer.NewTripConsumer(rabbitmq)
+	go func() {
+		if err := consumer.Listen(); err != nil {
+			log.Fatalf("Failed to listen to the message: %v", err)
+		}
+	}()
 
 	log.Printf("Starting gRPC server Driver service on port %s", lis.Addr().String())
 
