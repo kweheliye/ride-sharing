@@ -2,10 +2,12 @@ package messaging
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"ride-sharing/shared/contracts"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 const (
@@ -61,7 +63,7 @@ func (r *RabbitMQ) ConsumeMessages(queueName string, handler MessageHandler) err
 	msgs, err := r.Channel.Consume(
 		queueName, // queue
 		"",        // consumer
-		true,      // auto-ack
+		false,     // auto-ack
 		false,     // exclusive
 		false,     // no-local
 		false,     // no-wait
@@ -99,8 +101,14 @@ func (r *RabbitMQ) ConsumeMessages(queueName string, handler MessageHandler) err
 	return nil
 }
 
-func (r *RabbitMQ) PublishMessage(ctx context.Context, routingKey string, message string) error {
+func (r *RabbitMQ) PublishMessage(ctx context.Context, routingKey string, message contracts.AmqpMessage) error {
 	log.Printf("Publishing message with routing key: %s", routingKey)
+
+	jsonMsg, err := json.Marshal(message)
+	if err != nil {
+		return fmt.Errorf("failed to marshal message: %v", err)
+	}
+
 	return r.Channel.PublishWithContext(ctx,
 		TripExchange, // exchange
 		routingKey,   // routing key
@@ -108,7 +116,7 @@ func (r *RabbitMQ) PublishMessage(ctx context.Context, routingKey string, messag
 		false,        // immediate
 		amqp.Publishing{
 			ContentType:  "text/plain",
-			Body:         []byte(message),
+			Body:         jsonMsg,
 			DeliveryMode: amqp.Persistent,
 		})
 }
