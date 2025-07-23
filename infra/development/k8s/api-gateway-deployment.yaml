@@ -36,6 +36,11 @@ spec:
                 configMapKeyRef:
                   key: TRIP_SERVICE_URL
                   name: app-config
+            - name: RABBITMQ_URI
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-credentials
+                  key: uri
 ---
 apiVersion: v1
 kind: Service

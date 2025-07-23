@@ -12,6 +12,8 @@ import (
 
 type driverInMap struct {
 	Driver *pb.Driver
+	// Index int
+	// TODO: route
 }
 
 type Service struct {
@@ -25,6 +27,22 @@ func NewService() *Service {
 	}
 }
 
+func (s *Service) FindAvailableDrivers(packageType string) []string {
+	var matchingDrivers []string
+
+	for _, driver := range s.drivers {
+		if driver.Driver.PackageSlug == packageType {
+			matchingDrivers = append(matchingDrivers, driver.Driver.Id)
+		}
+	}
+
+	if len(matchingDrivers) == 0 {
+		return []string{}
+	}
+
+	return matchingDrivers
+}
+
 func (s *Service) RegisterDriver(driverId string, packageSlug string) (*pb.Driver, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -35,6 +53,7 @@ func (s *Service) RegisterDriver(driverId string, packageSlug string) (*pb.Drive
 	randomPlate := pkg.GenerateRandomPlate()
 	randomAvatar := util.GetRandomAvatar(randomIndex)
 
+	// we can ignore this property for now, but it must be sent to the frontend.
 	geohash := geohash.Encode(randomRoute[0][0], randomRoute[0][1])
 
 	driver := &pb.Driver{

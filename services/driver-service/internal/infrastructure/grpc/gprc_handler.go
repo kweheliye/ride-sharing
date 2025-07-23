@@ -1,16 +1,18 @@
-package grpc
+package main
 
 import (
 	"context"
+	"ride-sharing/services/driver-service/internal/service"
+	pb "ride-sharing/shared/proto/driver"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	service "ride-sharing/services/driver-service/internal/service"
-	pb "ride-sharing/shared/proto/driver"
 )
 
 type driverGrpcHandler struct {
 	pb.UnimplementedDriverServiceServer
+
 	service *service.Service
 }
 
